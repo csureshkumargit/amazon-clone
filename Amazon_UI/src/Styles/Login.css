@@ -1,0 +1,36 @@
+
+
+.sign-in-heading
+    {
+        margin-left: 40%;
+    font-size: 1.5em;
+    margin-top: 1em;
+}
+.user-account{
+    padding-bottom: 25em;
+    padding-top: 1em;
+    margin-left: 40%;
+}
+
+
+.btn-user-submit{
+    padding: 0.5em;
+    background-color: darkgoldenrod;
+    border-radius: 10em;
+}
+
+
+
+.btn-user-signup{
+    margin-top: 2em;
+}
+.btn-sign-in-message{
+    padding: 0.5em;
+    background-color:darkgoldenrod;
+    border-radius: 10em;
+margin-top: 2em;
+}
+
+.user-sign-in-up{
+margin-bottom: 3%;
+}
