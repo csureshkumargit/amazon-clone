@@ -6,6 +6,7 @@ import '../../Styles/Kids/KidsDetail.css';
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import { Carousel } from 'react-responsive-carousel';
 import Modal from 'react-modal';
+import WithRouter from "../WithRouter";
 
 const customStyles = {
     content: {
@@ -41,23 +42,17 @@ class KidsDetails extends react.Component {
             ItemupdatebasicDetail = { ...ItembasicDetail, qty: 1 }
             user_cart_item.push(ItemupdatebasicDetail);
             sessionStorage.setItem('user_cart', JSON.stringify(user_cart_item));
-            console.log('original-0', ItembasicDetail);
-            console.log('clone-0', ItemupdatebasicDetail);
         }
         else if (sessionStorage.getItem('user_cart') && sessionStorage.getItem('user_cart').length > 0) {
             user_cart_item = JSON.parse(sessionStorage.getItem('user_cart'));
-            console.log('original-1', ItembasicDetail);
-            console.log('session_cart', user_cart_item);
             isNewItemAddedToCart = user_cart_item.every((userItem) => {
                 if (userItem.productID != ItembasicDetail.productID)
                     return true;
             })
-            console.log('newitemadded', isNewItemAddedToCart);
+
             if (isNewItemAddedToCart) {
                 ItemupdatebasicDetail = { ...ItembasicDetail, qty: 1 }
                 user_cart_item.push(ItemupdatebasicDetail);
-
-                console.log('clone-1', ItemupdatebasicDetail);
             }
             else {
                 user_cart_item.map((userItem) => {
@@ -65,28 +60,28 @@ class KidsDetails extends react.Component {
                         userItem.qty = userItem.qty + 1;
                     }
                 })
-                console.log('add-existing-item', user_cart_item);
+
             }
 
         }
         sessionStorage.setItem('user_cart', JSON.stringify(user_cart_item));
         if (value === 'buy') {
-            this.props.history.push('/cart');
+            this.props.router.navigate('/cart');
         }
         else {
             this.setState({ [state]: value });
         }
 
-        console.log('final_cart', user_cart_item);
+
     }
     handlemodal = (state, value) => {
         this.setState({ [state]: value });
     }
     navigateToCart = () => {
-        this.props.history.push('/cart');
+        this.props.router.navigate('/cart');
     }
     componentDidMount() {
-        const { productId } = queryString.parse(this.props.location.search)
+        const { productId } = queryString.parse(this.props.router.location.search)
         axios({
             url: `https://amazon-clone-db.herokuapp.com/fashionkids/details/${productId}`,
             Headers: {
@@ -198,4 +193,4 @@ class KidsDetails extends react.Component {
     }
 }
 
-export default KidsDetails;
+export default WithRouter(KidsDetails);

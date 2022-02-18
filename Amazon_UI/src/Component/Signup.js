@@ -1,6 +1,7 @@
 import react from "react";
 import axios from "axios";
 import '../Styles/Signup.css';
+import WithRouter from "./WithRouter";
 class Signup extends react.Component {
     constructor() {
         super();
@@ -22,7 +23,7 @@ class Signup extends react.Component {
 
     }
     navigateToLoginPage = () => {
-        this.props.history.push('/login');
+        this.props.router.navigate('/login');
 
     }
 
@@ -34,7 +35,6 @@ class Signup extends react.Component {
             email,
             password
         }
-        console.log('info', userinfo);
         axios(
             {
                 url: "https://amazon-clone-db.herokuapp.com/api/user/Register",
@@ -88,4 +88,4 @@ class Signup extends react.Component {
     }
 }
 
-export default Signup;
+export default WithRouter(Signup);

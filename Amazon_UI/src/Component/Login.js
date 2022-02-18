@@ -1,5 +1,6 @@
 import react from "react";
 import axios from "axios";
+import WithRouter from "./WithRouter";
 import '../Styles/Login.css';
 class Login extends react.Component {
     constructor() {
@@ -26,25 +27,85 @@ class Login extends react.Component {
         }
 
     }
+    saveUsertempOrders = () => {
+        let items = [];
+        let username = undefined;
+
+        items = JSON.parse(sessionStorage.getItem('user_cart'));
+        username = sessionStorage.getItem('username');
+        const order = {
+            items,
+            username
+        }
+        axios(
+            {
+                url: `https://amazon-clone-db.herokuapp.com/api/tempOrders/${username}`,
+                Headers: {
+                    'content-type': 'application/json'
+                },
+                method: "DELETE"
+            }
+        ).then(res => console.log('del_orders', res.data.message))
+            .catch(err => console.log('err', err))
+        axios(
+            {
+                url: "https://amazon-clone-db.herokuapp.com/api/tempOrders",
+                Headers: {
+                    'content-type': 'application/json'
+                },
+                method: "POST",
+                data: order
+            }
+        ).then(res => console.log('orders', res.data.message))
+            .catch(err => console.log('err', err))
+
+    }
+
     navigateToHomeorOrderPage = () => {
         if (sessionStorage.getItem('user_cart') && sessionStorage.getItem('username') &&
             sessionStorage.getItem('jwt_token') && sessionStorage.getItem('user_cart').length > 0 &&
             sessionStorage.getItem('username').length > 0 && sessionStorage.getItem('jwt_token').length > 0) {
-            this.props.history.push('/payment');
+            this.saveUsertempOrders();
+            this.props.router.navigate('/payment');
         }
+        else if (!sessionStorage.getItem('user_cart') && sessionStorage.getItem('username') &&
+            sessionStorage.getItem('jwt_token') &&
+            sessionStorage.getItem('username').length > 0 && sessionStorage.getItem('jwt_token').length > 0) {
+            let username = undefined;
+            let user_temp_cart_items = [];
+            username = sessionStorage.getItem('username');
+            axios(
+                {
+                    url: `https://amazon-clone-db.herokuapp.com/api/tempOrders/${username}`,
+                    Headers: {
+                        'content-type': 'application/json'
+                    },
+                    method: "GET"
+                }
+            ).then(res => {
+                if (res.data.user_temp_order && res.data.user_temp_order.items && res.data.user_temp_order.items.length > 0) {
+                    user_temp_cart_items = res.data.user_temp_order.items;
+                    sessionStorage.setItem('user_cart', JSON.stringify(user_temp_cart_items));
+                }
+
+            })
+                .catch(err => console.log('err', err))
+            this.props.router.navigate('/');
+        }
+
         else {
-            this.props.history.push('/');
+            this.props.router.navigate('/');
+
         }
     }
     saveUserLoggedInfo = () => {
         const { username, jwt_token } = this.state;
-        console.log('usrname', username, 'jwt', jwt_token);
         sessionStorage.setItem('username', username);
         sessionStorage.setItem('jwt_token', jwt_token);
 
     }
     navigateToSignupPage = () => {
-        this.props.history.push('/signup');
+        this.props.router.navigate('/signup');
 
     }
     checkUserLogin = (e) => {
@@ -54,12 +115,12 @@ class Login extends react.Component {
             email,
             password
         }
-        console.log('info', userinfo);
         axios(
             {
                 url: "https://amazon-clone-db.herokuapp.com/api/user/Login",
-                Headers: {
-                    'content-type': 'application/json'
+
+                headers: {
+                    'content-type': 'application/json',
                 },
                 method: "POST",
                 data: userinfo
@@ -111,4 +172,4 @@ class Login extends react.Component {
     }
 }
 
-export default Login;
+export default WithRouter(Login);

@@ -2,6 +2,8 @@ import react from "react";
 import { Component } from "react";
 import Modal from 'react-modal';
 import '../Styles/Cart.css';
+import axios from "axios";
+import WithRouter from "./WithRouter";
 const customStyles = {
     content: {
         top: '50%',
@@ -30,21 +32,53 @@ class Cart extends react.Component {
         if (sessionStorage.getItem('user_cart') && sessionStorage.getItem('username') &&
             sessionStorage.getItem('jwt_token') && sessionStorage.getItem('user_cart').length > 0 &&
             sessionStorage.getItem('username').length > 0 && sessionStorage.getItem('jwt_token').length > 0) {
-            console.log('true', 1);
-            this.props.history.push('/payment');
+            this.props.router.navigate('/payment');
         }
         else {
-            console.log('true', 2);
             this.setState({ modalIsOpenforusertoSignIn: true });
         }
     }
 
     navigateToLoginPage = () => {
-        this.props.history.push('/login');
+        this.props.router.navigate('/login');
     }
     handlemodal = (state, value) => {
         this.setState({ [state]: value });
     }
+    saveUsertempOrders = () => {
+        let items = [];
+        let username = undefined;
+
+        items = JSON.parse(sessionStorage.getItem('user_cart'));
+        username = sessionStorage.getItem('username');
+        const order = {
+            items,
+            username
+        }
+        axios(
+            {
+                url: `https://amazon-clone-db.herokuapp.com/api/tempOrders/${username}`,
+                Headers: {
+                    'content-type': 'application/json'
+                },
+                method: "DELETE"
+            }
+        ).then(res => console.log('del_orders', res.data.message))
+            .catch(err => console.log('err', err))
+        axios(
+            {
+                url: "https://amazon-clone-db.herokuapp.com/api/tempOrders",
+                Headers: {
+                    'content-type': 'application/json'
+                },
+                method: "POST",
+                data: order
+            }
+        ).then(res => console.log('orders', res.data.message))
+            .catch(err => console.log('err', err))
+
+    }
+
     updateCartItems = (operation, index) => {
         const { cart_items } = this.state;
         let total_num_items = 0;
@@ -54,17 +88,16 @@ class Cart extends react.Component {
         if (operation === "add") {
             update_item.qty = update_item.qty + 1;
             update_result_cart_items[index] = update_item;
-            console.log('add', update_item);
+
         }
         else {
             if (update_item.qty === 1) {
                 update_result_cart_items.splice(index, 1);
-                console.log('slice', update_result_cart_items);
+
             }
             else {
                 update_item.qty = update_item.qty - 1;
                 update_result_cart_items[index] = update_item;
-                console.log('sub', update_item);
             }
         }
 
@@ -74,14 +107,20 @@ class Cart extends react.Component {
         })
         this.setState({ cart_items: update_result_cart_items, total_items: total_num_items, subtotal: subtotal_amt });
         sessionStorage.setItem('user_cart', JSON.stringify(update_result_cart_items));
+        if (sessionStorage.getItem('user_cart') && sessionStorage.getItem('user_cart').length > 0 &&
+            sessionStorage.getItem('username') && sessionStorage.getItem('username').length > 0) {
+            this.saveUsertempOrders();
+        }
 
     }
 
 
 
-
     componentDidMount() {
-
+        if (sessionStorage.getItem('user_cart') && sessionStorage.getItem('user_cart').length > 0 &&
+            sessionStorage.getItem('username') && sessionStorage.getItem('username').length > 0) {
+            this.saveUsertempOrders();
+        }
         if (sessionStorage.getItem('user_cart') && sessionStorage.getItem('user_cart').length > 0) {
             let user_cart_items = [];
             let total_num_items = 0;
@@ -163,7 +202,8 @@ class Cart extends react.Component {
                         <div className="col-4 col-sm-3 col-md-3 col-lg-3 col-xl-3">
                             <div className="cart-total-price-qty-buy">
                                 <span className="cart-sub-total-buy">Subtotal ({this.state.total_items} items)</span>: <span className="cart-total-amt">&#8377;{this.state.subtotal.toFixed(2)}</span>
-                                <div><button className="cart-buy-btn" onClick={this.navigateToHomeorOrderPage}>Proceed to Buy</button></div>
+                                {this.state.subtotal > 0 ? <div><button className="cart-buy-btn" onClick={this.navigateToHomeorOrderPage}>Proceed to Buy</button></div> :
+                                    <div><button className="cart-buy-btn" onClick={this.navigateToHomeorOrderPage} disabled >Proceed to Buy</button></div>}
                             </div>
                         </div>
                     </div>
@@ -182,4 +222,4 @@ class Cart extends react.Component {
     }
 }
 
-export default Cart;
+export default WithRouter(Cart);

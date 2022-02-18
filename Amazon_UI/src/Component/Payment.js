@@ -50,11 +50,13 @@ class Payment extends react.Component {
     }
 
     post = (details) => {
+
         const form = this.buildForm(details);
         document.body.appendChild(form);
         form.submit();
         form.remove();
         this.saveUserOrders();
+        this.removeUserTempOrders();
 
 
     }
@@ -67,9 +69,23 @@ class Payment extends react.Component {
             },
 
             body: JSON.stringify(data_pay)
-        }).then(response =>
-            response.json()).catch(err => console.log(err))
-
+        }).then(response => response.json()).catch(err => console.log(err))
+    }
+    removeUserTempOrders = () => {
+        let username;
+        if (sessionStorage.getItem('username') && sessionStorage.getItem('username').length > 0) {
+            username = sessionStorage.getItem('username');
+            axios(
+                {
+                    url: `https://amazon-clone-db.herokuapp.com/api/tempOrders/${username}`,
+                    Headers: {
+                        'content-type': 'application/json'
+                    },
+                    method: "DELETE"
+                }
+            ).then(res => console.log('del_orders', res.data.message))
+                .catch(err => console.log('err', err))
+        }
     }
     saveUserOrders = () => {
         let items = [];
@@ -105,14 +121,11 @@ class Payment extends react.Component {
             amount: subtotal,
             email
         };
-
         this.getData(paymentObj).then(response => {
-            console.log('resp', response);
             var information = {
                 action: "https://securegw-stage.paytm.in/order/process",
                 params: response
             }
-            console.log('info', information);
             this.post(information)
         })
     }

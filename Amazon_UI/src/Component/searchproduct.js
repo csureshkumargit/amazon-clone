@@ -2,7 +2,8 @@ import react from "react";
 import queryString from "query-string";
 import axios from "axios";
 import '../Styles/searchproduct.css';
-class searchproduct extends react.Component {
+import WithRouter from "./WithRouter";
+class Searchproduct extends react.Component {
     constructor() {
         super();
         this.state = {
@@ -12,11 +13,11 @@ class searchproduct extends react.Component {
     }
 
     checkforItemDetail = (product, productId) => {
-        this.props.history.push(`${product}/detail?productId=${productId}`);
+        this.props.router.navigate(`/${product}/detail?productId=${productId}`);
     }
     componentDidUpdate(prevProps, prevState) {
-        let { searchproductword } = queryString.parse(this.props.location.search);
-        console.log('sp', searchproductword);
+        let { searchproductword } = queryString.parse(this.props.router.location.search);
+
         const { searchproducts, searchword } = this.state;
         console.log('sp1', prevState.searchword);
         if (searchword != searchproductword) {
@@ -33,7 +34,7 @@ class searchproduct extends react.Component {
     }
 
     componentDidMount() {
-        const { searchproductword } = queryString.parse(this.props.location.search);
+        const { searchproductword } = queryString.parse(this.props.router.location.search);
         this.setState({ searchword: searchproductword });
         axios(
             {
@@ -89,7 +90,7 @@ class searchproduct extends react.Component {
                                 Price: {resultitem.price && resultitem.price > 0 ? `${resultitem.price_symbol}${resultitem.price}` : 'Contact Support'}
                             </div>
                             <div className="prime-item">
-                                {resultitem.has_prime == true ? <img src="https://www.nicepng.com/png/detail/115-1159983_amazon-prime-logo-prime-amazon.png" alt="prime-img 
+                                {resultitem.has_prime === true ? <img src="https://www.nicepng.com/png/detail/115-1159983_amazon-prime-logo-prime-amazon.png" alt="prime-img 
                                         "/> : <p className="prime-desc">Not Eligible for Prime</p>}
                             </div>
 
@@ -110,4 +111,4 @@ class searchproduct extends react.Component {
 
     }
 }
-export default searchproduct;
+export default WithRouter(Searchproduct);
